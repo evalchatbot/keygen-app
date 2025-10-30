@@ -3,14 +3,14 @@ from supabase_config import supabase
 import secrets
 from datetime import datetime, timedelta, timezone
 import os
-
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'a-very-secure-random-secret-key')
+from flask_cors import CORS
 
 # Set the template and static folders relative to the api directory
 template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'templates'))
 static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static'))
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+CORS(app)
+app.secret_key = os.environ.get('SECRET_KEY', 'a-very-secure-random-secret-key')
 
 def generate_key(prefix="PRO"):
     random_part = secrets.token_hex(8).upper()
@@ -18,47 +18,37 @@ def generate_key(prefix="PRO"):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    if "generated_keys" not in session:
-        session["generated_keys"] = []
+    try:
+        if request.method == "POST":
+            duration_days = int(request.form.get("duration", 30))
+            new_key = generate_key()
+            expiry_date = datetime.now(timezone.utc) + timedelta(days=duration_days)
 
-    message = None
-    new_entry = None
+            data = {
+                "key": new_key,
+                "is_used": False,
+                "duration_days": duration_days,
+                "expiry_date": expiry_date.isoformat(),
+            }
 
-    if request.method == "POST":
-        duration_days = int(request.form.get("duration", 30))
-        new_key = generate_key()
-        expiry_date = datetime.now(timezone.utc) + timedelta(days=duration_days)
-        created_at = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M:%S")
-
-        data = {
-            "key": new_key,
-            "is_used": False,
-            "duration_days": duration_days,
-            "expiry_date": expiry_date.isoformat(),
-        }
-
-        try:
             response = supabase.table("keys").insert(data).execute()
             if response.data:
-                message = "✅ Key Generated Successfully!"
-                new_entry = {
+                return jsonify({
+                    "status": "success",
+                    "message": "✅ Key Generated Successfully!",
                     "key": new_key,
                     "duration": duration_days,
-                    "created_at": created_at,
-                }
-                session["generated_keys"].append(new_entry)
-                session.modified = True
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                })
             else:
-                message = "⚠️ Could not confirm save to Supabase."
-        except Exception as e:
-            message = f"❌ Error: {str(e)}"
+                return jsonify({
+                    "status": "error",
+                    "message": "Could not save to database"
+                }), 500
 
-    return render_template(
-        "index.html",
-        message=message,
-        generated_keys=session.get("generated_keys", []),
-        last_key=new_entry,
-    )
+        return render_template("index.html")
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/keys")
 def keys():
