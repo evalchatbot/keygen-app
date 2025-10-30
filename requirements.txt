@@ -1,0 +1,4 @@
+# Python dependencies
+flask==2.0.1
+python-dotenv==0.19.0
+supabase==0.7.1
