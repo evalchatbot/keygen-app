@@ -1,5 +1,4 @@
-# Python dependencies
 flask==2.0.1
 python-dotenv==0.19.0
 supabase==0.7.1
-flask-cors==4.0.0
+requests==2.31.0
