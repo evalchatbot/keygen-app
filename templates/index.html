@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CSS Chatbot — Admin Key Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="main-header">
+    <h1>CSS Chatbot — Admin Key Generator</h1>
+  </header>
+
+  <main class="dashboard-container">
+    <div class="form-card">
+      <h2>🔑 Generate New Access Key</h2>
+
+      <form id="keyForm" method="POST">
+        <label for="duration">Select Duration (Days)</label>
+        <select id="duration" name="duration">
+          <option value="7">7 Days</option>
+          <option value="30" selected>30 Days</option>
+          <option value="90">90 Days</option>
+          <option value="365">365 Days</option>
+        </select>
+
+        <div class="button-row">
+          <button type="submit" class="generate-btn">Generate Key</button>
+          <button type="button" id="clearBtn" class="clear-btn">Clear</button>
+          <a href="/keys" class="view-btn">View Generated Keys</a>
+        </div>
+      </form>
+
+      {% if message %}
+      <div id="generatedKey" class="key-box">
+        <p>{{ message }}</p>
+        {% if last_key %}
+          <p><strong>Key:</strong> {{ last_key.key }}</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("clearBtn")?.addEventListener("click", () => {
+      const keyBox = document.getElementById("generatedKey");
+      if (keyBox) keyBox.remove();
+      document.getElementById("keyForm").reset();
+    });
+  </script>
+</body>
+</html>

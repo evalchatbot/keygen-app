@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Generated Keys — CSS Chatbot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* ===== Sweet Modal Overlay ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      z-index: 1000;
+    }
+    .modal-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal {
+      background: #161625;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 25px 35px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255, 0, 84, 0.3);
+      max-width: 320px;
+      animation: popIn 0.25s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal h3 {
+      color: #fff;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+
+    .modal p {
+      color: #aaa;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .modal-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-cancel {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ccc;
+    }
+    .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-confirm {
+      background: linear-gradient(90deg, #ff0054, #ff4d6d);
+      color: white;
+    }
+    .btn-confirm:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(255, 77, 109, 0.6);
+    }
+
+    /* Fade-out animation for deleted rows */
+    tr.fade-out {
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="main-header">
+    <h1>Generated Keys — CSS Chatbot</h1>
+  </header>
+
+  <main class="table-container">
+    {% if generated_keys %}
+    <table id="keys-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Key</th>
+          <th>Duration (Days)</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key in generated_keys %}
+        <tr data-id="{{ key.id }}">
+          <td>{{ loop.index }}</td>
+          <td>{{ key.key }}</td>
+          <td>{{ key.duration_days }}</td>
+          <td>{{ key.created_at }}</td>
+          <td><button class="delete-btn" onclick="openDeleteModal('{{ key.id }}')">Delete</button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="no-keys-msg">No keys available in database.</p>
+    {% endif %}
+
+    <div class="button-center">
+      <a href="/" class="back-btn" style="text-decoration: none;">← Back to Generator</a>
+    </div>
+  </main>
+
+  <!-- Beautiful Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+      <h3>Delete Key?</h3>
+      <p>This action cannot be undone. Are you sure you want to delete this key?</p>
+      <div class="modal-buttons">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let keyToDelete = null;
+
+    function openDeleteModal(id) {
+      keyToDelete = id;
+      document.getElementById("deleteModal").classList.add("active");
+    }
+
+    function closeModal() {
+      document.getElementById("deleteModal").classList.remove("active");
+      keyToDelete = null;
+    }
+
+    document.getElementById("confirmDelete").addEventListener("click", async () => {
+      if (!keyToDelete) return;
+
+      const row = document.querySelector(`tr[data-id='${keyToDelete}']`);
+      try {
+        const res = await fetch(`/delete_key/${keyToDelete}`, { method: "DELETE" });
+        const data = await res.json();
+
+        if (data.status === "success") {
+          // Animate row removal
+          row.classList.add("fade-out");
+          setTimeout(() => row.remove(), 400);
+        } else {
+          alert("❌ " + data.message);
+        }
+      } catch (err) {
+        alert("⚠️ Error deleting key: " + err.message);
+      } finally {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+/* ==========================
+   🌙 CSS Chatbot — Dark Elegant Theme
+   ========================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+  --bg-dark: #050510;
+  --card-bg: #0d0d18;
+  --accent-blue: #3a86ff;
+  --accent-purple: #7209b7;
+  --accent-pink: #ff0054;
+  --text-light: #eaeaea;
+  --text-muted: #a8a8a8;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --glow: 0 0 20px rgba(114, 9, 183, 0.6);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+  text-decoration: none; /* removes underlines everywhere */
+}
+
+/* === BODY === */
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, #08081a, #04040c, #020208);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  color: var(--text-light);
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+
+/* === HEADER === */
+.main-header {
+  width: 100%;
+  text-align: center;
+  padding: 25px 0;
+  background: #060612;
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.main-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+
+/* === MAIN CONTAINER === */
+.dashboard-container,
+.table-container {
+  width: 92%;
+  max-width: 450px;
+  background: var(--card-bg);
+  border-radius: 18px;
+  box-shadow: 0 0 35px rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--border-light);
+  padding: 40px 35px;
+  margin-top: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.dashboard-container:hover,
+.table-container:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glow);
+}
+
+/* Center the container properly on large screens */
+@media (min-height: 800px) {
+  .dashboard-container {
+    margin-top: 10vh;
+  }
+}
+
+/* === FORM === */
+label {
+  color: var(--text-light);
+  font-weight: 400;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  display: block;
+  text-align: left;
+  width: 100%;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  background: #161626;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-size: 1rem;
+  margin-bottom: 25px;
+  outline: none;
+  appearance: none;
+  transition: all 0.2s ease;
+}
+
+select:hover,
+select:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(58, 134, 255, 0.4);
+}
+
+option {
+  background: #101020;
+  color: var(--text-light);
+}
+
+/* === BUTTONS === */
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+}
+
+button,
+.view-btn,
+.back-btn,
+.delete-btn {
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink));
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover,
+.view-btn:hover,
+.back-btn:hover,
+.delete-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 14px rgba(255, 0, 84, 0.4);
+}
+
+.clear-btn {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.clear-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* === KEY BOX === */
+.key-box {
+  width: 100%;
+  text-align: center;
+  margin-top: 25px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.05);
+}
+
+.key-box p {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  margin: 6px 0;
+}
+
+/* === TABLE PAGE === */
+.table-container {
+  max-width: 900px;
+  align-items: center;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0e0e1a;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 25px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+}
+
+th,
+td {
+  padding: 14px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.95rem;
+  color: var(--text-light);
+}
+
+th {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--accent-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease;
+}
+
+.delete-btn {
+  background: linear-gradient(90deg, #ff0054, #ff4d6d);
+  font-size: 0.85rem;
+  padding: 7px 12px;
+}
+
+.delete-btn:hover {
+  box-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+}
+
+/* === EMPTY STATE === */
+.no-keys-msg {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 25px;
+  font-size: 1rem;
+}
+
+/* === CENTER BUTTON === */
+.button-center {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.view-btn,
+.back-btn {
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+}
+
+.view-btn:hover,
+.back-btn:hover {
+  box-shadow: 0 0 14px rgba(58, 134, 255, 0.4);
+  transform: scale(1.05);
+}
