@@ -3,7 +3,8 @@
     "builds": [
         {
             "src": "api.py",
-            "use": "@vercel/python"
+            "use": "@vercel/python",
+            "config": { "runtime": "python3.9" }
         }
     ],
     "routes": [
@@ -11,5 +12,9 @@
             "src": "/(.*)",
             "dest": "api.py"
         }
-    ]
+    ],
+    "env": {
+        "SUPABASE_URL": "https://najsawhhrgdsnenudane.supabase.co",
+        "SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hanNhd2hocmdkc25lbnVkYW5lIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDg1MDg4NCwiZXhwIjoyMDcwNDI2ODg0fQ.vD5ArESarSfrrh7an52y2mz35sBUr35AxouhaOvGsPg"
+    }
 }

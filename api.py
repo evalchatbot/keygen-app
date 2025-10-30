@@ -1,18 +1,28 @@
 from flask import Flask, jsonify, request
-from supabase_config import supabase
+from supabase import create_client, Client
 import secrets
 from datetime import datetime, timedelta, timezone
 import os
 
 app = Flask(__name__)
 
+# Initialize Supabase client
+supabase: Client = create_client(
+    os.environ.get('SUPABASE_URL'),
+    os.environ.get('SUPABASE_KEY')
+)
+
 def generate_key(prefix="PRO"):
     random_part = secrets.token_hex(8).upper()
     return f"{prefix}-{random_part}"
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"message": "API is running"}), 200
+@app.route("/api/health", methods=["GET"])
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "supabase_url": os.environ.get('SUPABASE_URL', 'not_set'),
+        "timestamp": datetime.now().isoformat()
+    })
 
 @app.route("/api/generate", methods=["POST"])
 def generate():
