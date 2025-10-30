@@ -81,4 +81,4 @@ def delete_key(key_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
