@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics | Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1.5rem;
+        }
+
+        .stats-highlight {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+            border-left: 4px solid var(--success);
+        }
+
+        .stats-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border-left: 4px solid var(--warning);
+        }
+
+        .stats-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">Admin Panel</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link">
+                        <span>📊</span> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/generate" class="nav-link">
+                        <span>🔑</span> Generate Key
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/keys" class="nav-link">
+                        <span>📋</span> All Keys
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/stats" class="nav-link active">
+                        <span>📈</span> Statistics
+                    </a>
+                </li>
+            </ul>
+            <div style="margin-top: auto;">
+                <a href="/logout" class="nav-link">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Menu" title="Toggle Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="page-title">
+                    <h2>Statistics</h2>
+                    <p>Key usage and user growth overview</p>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle Theme">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.reload()">
+                        <span>↻</span> Refresh
+                    </button>
+                </div>
+            </header>
+            <!-- Main Stats - Compact -->
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                <div class="stat-card stats-highlight">
+                    <div class="stat-label">Total Keys</div>
+                    <div class="stat-value">{{ "{:,}".format(stats.total_keys) }}</div>
+                    <div class="stat-trend">Generated overall</div>
+                </div>
+                <div class="stat-card stats-info">
+                    <div class="stat-label">Usage Rate</div>
+                    <div class="stat-value">
+                        {% if stats.total_keys > 0 %}
+                        {{ "%.1f"|format((stats.used_keys / stats.total_keys) * 100) }}%
+                        {% else %}0%{% endif %}
+                    </div>
+                    <div class="stat-trend">Used vs total keys</div>
+                </div>
+                <div class="stat-card stats-highlight">
+                    <div class="stat-label">Pro Users</div>
+                    <div class="stat-value">{{ "{:,}".format(stats.pro_users) }}</div>
+                    <div class="stat-trend">Active subscriptions</div>
+                </div>
+                <div class="stat-card stats-warning">
+                    <div class="stat-label">New This Month</div>
+                    <div class="stat-value">{{ "{:,}".format(stats.this_month_users) }}</div>
+                    <div class="stat-trend">Recent signups</div>
+                </div>
+            </div>
+
+            <!-- Token Usage Stats -->
+            <div class="stats-grid" style="margin-top: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-label">Total Input Tokens</div>
+                    <div class="stat-value" style="font-size: 1.5rem;">{{ "{:,}".format(stats.total_input_tokens) }}</div>
+                    <div class="stat-trend">Cumulative input usage</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Total Output Tokens</div>
+                    <div class="stat-value" style="font-size: 1.5rem;">{{ "{:,}".format(stats.total_output_tokens) }}</div>
+                    <div class="stat-trend">Cumulative output usage</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Total Tokens</div>
+                    <div class="stat-value" style="font-size: 1.5rem;">
+                        {{ "{:,}".format(stats.total_input_tokens + stats.total_output_tokens) }}
+                    </div>
+                    <div class="stat-trend">Combined token usage</div>
+                </div>
+            </div>
+
+            <!-- KPI Progress - Professional & Compact -->
+            <div class="table-card" style="margin-top: 2rem;">
+                <div class="table-header-row">
+                    <div class="chart-title">📌 Key Performance Indicators</div>
+                </div>
+                <div style="padding: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                    <div>
+                        <div class="stat-label">Key Usage Rate</div>
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <div style="font-weight:700; min-width:64px;">
+                                {% if stats.total_keys > 0 %}
+                                {{ "%.1f"|format((stats.used_keys / stats.total_keys) * 100) }}%
+                                {% else %}0%{% endif %}
+                            </div>
+                            {% set usage_pct = ((stats.used_keys / stats.total_keys) * 100) if stats.total_keys > 0 else 0 %}
+                            <div style="flex:1; height:8px; background: var(--border); border-radius:9999px; overflow:hidden;">
+                                <div class="progress-bar" data-width="{{ '%.1f'|format(usage_pct) }}" style="height:100%; background: linear-gradient(90deg, var(--success), #34d399);"></div>
+                            </div>
+                        </div>
+                        <div class="stat-trend">Used {{ stats.used_keys }} of {{ stats.total_keys }} keys</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Pro Conversion</div>
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <div style="font-weight:700; min-width:64px;">
+                                {% if stats.all_time_users > 0 %}
+                                {{ "%.1f"|format((stats.pro_users / stats.all_time_users) * 100) }}%
+                                {% else %}0%{% endif %}
+                            </div>
+                            {% set pro_pct = ((stats.pro_users / stats.all_time_users) * 100) if stats.all_time_users > 0 else 0 %}
+                            <div style="flex:1; height:8px; background: var(--border); border-radius:9999px; overflow:hidden;">
+                                <div class="progress-bar" data-width="{{ '%.1f'|format(pro_pct) }}" style="height:100%; background: linear-gradient(90deg, #3b82f6, #60a5fa);"></div>
+                            </div>
+                        </div>
+                        <div class="stat-trend">{{ stats.pro_users }} Pro of {{ stats.all_time_users }} users</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">New Users (Month)</div>
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <div style="font-weight:700; min-width:64px;">{{ stats.this_month_users }}</div>
+                            {% set month_pct = (stats.this_month_users * 5) %}
+                            {% set month_pct_capped = 100 if month_pct > 100 else month_pct %}
+                            <div style="flex:1; height:8px; background: var(--border); border-radius:9999px; overflow:hidden;">
+                                <div class="progress-bar" data-width="{{ '%.1f'|format(month_pct_capped) }}" style="height:100%; background: linear-gradient(90deg, var(--warning), #fbbf24);"></div>
+                            </div>
+                        </div>
+                        <div class="stat-trend">Recent signups this month</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Growth - Compact Table -->
+            <div class="table-card" style="margin-top: 1.5rem;">
+                <div class="table-header-row">
+                    <div class="chart-title">🗓️ Monthly Growth (Last 6)</div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th style="text-align:right;">New Users</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for month, count in stats.monthly_growth %}
+                            <tr>
+                                <td style="color: var(--text-secondary);">{{ month }}</td>
+                                <td style="text-align:right; font-weight:600;">{{ count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Page footer spacing -->
+            <div style="height: 1rem;"></div>
+        </main>
+    </div>
+
+    <script>
+        // Theme Management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('themeIcon').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        // Load saved theme
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeIcon').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+        })();
+
+        // Sidebar Toggle
+        function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('collapsed');
+                if (window.innerWidth > 768) {
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }
+        }
+
+        // Load sidebar state
+        (function () {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed && window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.add('collapsed');
+            }
+            // Auto-close sidebar on mobile when any nav link is clicked
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('sidebar').classList.add('collapsed');
+                    }
+                });
+            });
+        })();
+
+        // Apply progress widths from data attributes to avoid inline Jinja in style
+        (function () {
+            const bars = document.querySelectorAll('.progress-bar');
+            bars.forEach(bar => {
+                const w = parseFloat(bar.dataset.width || '0');
+                bar.style.width = (isNaN(w) ? 0 : w) + '%';
+            });
+        })();
+    </script>
+</body>
+
+</html>

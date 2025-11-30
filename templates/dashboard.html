@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">Admin Panel</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link active">
+                        <span>📊</span> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/generate" class="nav-link">
+                        <span>🔑</span> Generate Key
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/keys" class="nav-link">
+                        <span>📋</span> All Keys
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/stats" class="nav-link">
+                        <span>📈</span> Statistics
+                    </a>
+                </li>
+            </ul>
+            <div style="margin-top: auto;">
+                <a href="/logout" class="nav-link">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Menu" title="Toggle Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="page-title">
+                    <h2>Dashboard</h2>
+                    <p>User management</p>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle Theme">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.reload()">
+                        <span>↻</span> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <!-- Users Table -->
+            <div class="table-card">
+                <div class="table-header-row">
+                    <div class="chart-title">Users</div>
+                    <input type="text" class="search-input" placeholder="Search users..." id="searchInput"
+                        onkeyup="filterTable()">
+                </div>
+
+                <div style="padding: 0 1.5rem;">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="filterTab('all')">All Users</button>
+                        <button class="tab-btn" onclick="filterTab('Pro')">Pro Users</button>
+                        <button class="tab-btn" onclick="filterTab('Free')">Free Users</button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Key</th>
+                                <th class="pro-only">Pro Start</th>
+                                <th class="pro-only">Pro End</th>
+                                <th>Input Tokens</th>
+                                <th>Output Tokens</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr data-role="{{ user.role }}">
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="avatar">{{ user.email[0].upper() }}</div>
+                                        <div class="user-details">
+                                            <span class="user-name">{{ user.email }}</span>
+                                            <span class="user-email">{{ user.full_name or 'User' }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span
+                                        class="status-pill {{ 'status-pro' if user.role == 'Pro' else 'status-free' }}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.key %}
+                                    <span class="key-code">{{ user.key }}</span>
+                                    {% else %}
+                                    <span style="color: var(--text-secondary); font-size: 0.8rem;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pro-only" style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    {% if user.role == 'Pro' and user.pro_start %}
+                                    {{ user.pro_start[:10] }}
+                                    {% else %}
+                                    <span style="font-size: 0.8rem;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pro-only" style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    {% if user.role == 'Pro' and user.pro_end %}
+                                    {{ user.pro_end[:10] }}
+                                    {% else %}
+                                    <span style="font-size: 0.8rem;">-</span>
+                                    {% endif %}
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    {{ "{:,}".format(user.usage_input) }}
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    {{ "{:,}".format(user.usage_output) }}
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    {{ user.created_at[:10] if user.created_at else 'N/A' }}
+                                </td>
+                                <td>
+                                    <div class="actions-cell">
+                                        {% if user.role == 'Pro' %}
+                                        <button class="btn-remove-pro" onclick="confirmRemovePro('{{ user.id }}', '{{ user.email }}')" title="Remove Pro Status">
+                                            🔻 Remove Pro
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Confirm Action</div>
+            <div class="modal-body" id="modalBody">Are you sure you want to proceed?</div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-confirm" id="confirmBtn" onclick="executeAction()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pendingAction = null;
+
+        // Modal Functions
+        function showModal(title, message, action) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').textContent = message;
+            document.getElementById('confirmModal').classList.add('show');
+            pendingAction = action;
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            pendingAction = null;
+        }
+
+        function executeAction() {
+            if (pendingAction) {
+                pendingAction();
+            }
+            closeModal();
+        }
+
+        // Remove Pro Confirmation
+        function confirmRemovePro(userId, userEmail) {
+            showModal(
+                'Remove Pro Status',
+                `Are you sure you want to remove Pro status from ${userEmail}? Their key will be deleted and they will be moved to Free tier.`,
+                () => removePro(userId)
+            );
+        }
+
+        // Remove Pro Action
+        async function removePro(userId) {
+            try {
+                const response = await fetch(`/remove_pro/${userId}`, { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message || 'Pro status removed successfully');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to remove Pro status'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while removing Pro status');
+            }
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('confirmModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Theme Management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('themeIcon').textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        // Load saved theme
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeIcon').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+        })();
+
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                sidebar.classList.toggle('collapsed');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            }
+        }
+
+        // Load sidebar state
+        (function () {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.getElementById('sidebar').classList.add('collapsed');
+            }
+            // Auto-close sidebar on mobile when any nav link is clicked
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('sidebar').classList.add('collapsed');
+                    }
+                });
+            });
+        })();
+
+        // Filter Tabs
+        let currentTab = 'all';
+        function filterTab(role) {
+            currentTab = role;
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(role) || (role === 'all' && btn.textContent.includes('All'))) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Hide Pro columns when viewing Free users only
+            const proColumns = document.querySelectorAll('.pro-only');
+            if (role === 'Free') {
+                proColumns.forEach(col => col.style.display = 'none');
+            } else {
+                proColumns.forEach(col => col.style.display = '');
+            }
+
+            filterTable();
+        }
+
+        // Filter Table
+        function filterTable() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById("usersTable");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) {
+                const rowRole = tr[i].getAttribute('data-role');
+                const tdName = tr[i].getElementsByTagName("td")[0];
+                const tdKey = tr[i].getElementsByTagName("td")[2];
+
+                let matchesSearch = false;
+                if (tdName || tdKey) {
+                    const txtValueName = tdName.textContent || tdName.innerText;
+                    const txtValueKey = tdKey.textContent || tdKey.innerText;
+                    if (txtValueName.toLowerCase().indexOf(filter) > -1 || txtValueKey.toLowerCase().indexOf(filter) > -1) {
+                        matchesSearch = true;
+                    }
+                }
+
+                let matchesTab = (currentTab === 'all') || (rowRole === currentTab);
+
+                if (matchesSearch && matchesTab) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
