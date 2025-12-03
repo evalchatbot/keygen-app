@@ -84,15 +84,53 @@ body {
     transform: translateX(-100%);
 }
 
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
 .logo {
     font-size: 1.25rem;
     font-weight: 700;
-    margin-bottom: 2rem;
     color: var(--text-primary);
     background: linear-gradient(135deg, var(--accent), var(--success));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+.sidebar-close {
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.sidebar-close:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    transform: scale(1.1);
+}
+
+.sidebar-close:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    .sidebar-close {
+        display: flex;
+    }
 }
 
 .nav-menu {

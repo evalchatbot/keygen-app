@@ -12,7 +12,10 @@
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <div class="logo">Admin Panel</div>
+            <div class="sidebar-header">
+                <div class="logo">Admin Panel</div>
+                <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close Sidebar" title="Close Sidebar">✕</button>
+            </div>
             <ul class="nav-menu">
                 <li class="nav-item">
                     <a href="/dashboard" class="nav-link active">
@@ -91,6 +94,7 @@
                                 <th class="pro-only">Pro End</th>
                                 <th>Input Tokens</th>
                                 <th>Output Tokens</th>
+                                <th>OCR PDF Count</th>
                                 <th>Joined</th>
                                 <th>Actions</th>
                             </tr>
@@ -139,6 +143,9 @@
                                 </td>
                                 <td style="color: var(--text-secondary); font-size: 0.9rem;">
                                     {{ "{:,}".format(user.usage_output) }}
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: 0.9rem;">
+                                    {{ "{:,}".format(user.ocr_count) }}
                                 </td>
                                 <td style="color: var(--text-secondary); font-size: 0.9rem;">
                                     {{ user.created_at[:10] if user.created_at else 'N/A' }}

@@ -181,6 +181,7 @@ def dashboard():
                 "pro_end": None,
                 "usage_input": 0,
                 "usage_output": 0,
+                "ocr_count": 0,
             }
         
         # Map keys to users
@@ -199,6 +200,7 @@ def dashboard():
             if user_id in user_map:
                 user_map[user_id]["usage_input"] += u.get("tokens_input_used", 0)
                 user_map[user_id]["usage_output"] += u.get("tokens_output_used", 0)
+                user_map[user_id]["ocr_count"] += u.get("ocr_count", 0)
         
         processed_users = list(user_map.values())
         processed_users.sort(key=lambda x: x.get("created_at") or "", reverse=True)
@@ -337,6 +339,21 @@ def stats():
         total_input_tokens = sum(u.get("tokens_input_used", 0) for u in usage_free + usage_pro)
         total_output_tokens = sum(u.get("tokens_output_used", 0) for u in usage_free + usage_pro)
         
+        # Calculate total OCR count
+        total_ocr_count = sum(u.get("ocr_count", 0) for u in usage_free + usage_pro)
+        
+        # Calculate this month OCR count
+        this_month_ocr_count = 0
+        for u in usage_free + usage_pro:
+            created_at_str = u.get("created_at")
+            if created_at_str:
+                try:
+                    created_at_dt = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                    if created_at_dt >= start_of_month:
+                        this_month_ocr_count += u.get("ocr_count", 0)
+                except:
+                    pass
+        
         stats_data = {
             "total_keys": total_keys,
             "used_keys": used_keys,
@@ -346,6 +363,8 @@ def stats():
             "this_month_users": this_month_users,
             "total_input_tokens": total_input_tokens,
             "total_output_tokens": total_output_tokens,
+            "total_ocr_count": total_ocr_count,
+            "this_month_ocr_count": this_month_ocr_count,
             "monthly_growth": list(reversed(list(monthly_data.items()))),
         }
         

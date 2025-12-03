@@ -34,7 +34,10 @@
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <div class="logo">Admin Panel</div>
+            <div class="sidebar-header">
+                <div class="logo">Admin Panel</div>
+                <button class="sidebar-close" onclick="toggleSidebar()" aria-label="Close Sidebar" title="Close Sidebar">✕</button>
+            </div>
             <ul class="nav-menu">
                 <li class="nav-item">
                     <a href="/dashboard" class="nav-link">
@@ -133,6 +136,31 @@
                         {{ "{:,}".format(stats.total_input_tokens + stats.total_output_tokens) }}
                     </div>
                     <div class="stat-trend">Combined token usage</div>
+                </div>
+            </div>
+
+            <!-- OCR PDF Generation Stats -->
+            <div class="stats-grid" style="margin-top: 2rem;">
+                <div class="stat-card stats-info">
+                    <div class="stat-label">📄 Total PDFs Generated</div>
+                    <div class="stat-value" style="font-size: 1.8rem;">{{ "{:,}".format(stats.total_ocr_count) }}</div>
+                    <div class="stat-trend">All-time OCR PDF count</div>
+                </div>
+
+                <div class="stat-card stats-warning">
+                    <div class="stat-label">📅 PDFs This Month</div>
+                    <div class="stat-value" style="font-size: 1.8rem;">{{ "{:,}".format(stats.this_month_ocr_count) }}</div>
+                    <div class="stat-trend">Current month OCR count</div>
+                </div>
+
+                <div class="stat-card stats-highlight">
+                    <div class="stat-label">📊 Average per User</div>
+                    <div class="stat-value" style="font-size: 1.8rem;">
+                        {% if stats.all_time_users > 0 %}
+                        {{ "%.1f"|format(stats.total_ocr_count / stats.all_time_users) }}
+                        {% else %}0{% endif %}
+                    </div>
+                    <div class="stat-trend">PDFs per user average</div>
                 </div>
             </div>
 
